@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
-import { about } from "@/content/copy";
+import { AboutHero } from "@/components/sections/AboutHero";
+import { CompanyStory } from "@/components/sections/CompanyStory";
+import { LeadershipDetail } from "@/components/sections/LeadershipDetail";
+import { ValuesAndCoverage } from "@/components/sections/ValuesAndCoverage";
 
-export const metadata: Metadata = { title: "About" };
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "BCLI Construction & Engineering is a civil firm operating out of Bath Settlement, Berbice, serving regions across coastal Guyana.",
+};
 
 export default function AboutPage() {
   return (
-    <section className="container-x pt-40 pb-section">
-      <p className="text-eyebrow uppercase tracking-eyebrow text-gray">
-        {about.hero.eyebrow}
-      </p>
-      <h1 className="mt-6 font-display text-display-lg text-balance">
-        {about.hero.headline}
-      </h1>
-      <p className="mt-8 max-w-prose text-lg leading-relaxed text-gray">
-        Phase 2 about-builder fills in the full company story, leadership
-        detail, values, and coverage.
-      </p>
-    </section>
+    <>
+      <AboutHero />
+      <CompanyStory />
+      <LeadershipDetail />
+      <ValuesAndCoverage />
+    </>
   );
 }
