@@ -16,7 +16,7 @@ export const leaders: Leader[] = [
     shortBio:
       "Master civil engineer with twenty plus years of experience planning, designing, and executing infrastructure and construction projects across Guyana.",
     fullBio:
-      "Bickram Kowchai is the founder of BCLI Construction & Engineering and a master civil engineer with twenty plus years of experience in the planning, design, and execution of infrastructure and construction projects throughout Guyana. He has worked across a wide range of project types, with structural integrity and field efficiency at the center of how he approaches the work. His method is direct: check the drawings, understand the site conditions, build to spec. Two decades of that approach across coastal Guyana.",
+      "Bickram Kowchai is the founder of BCLI Construction & Engineering and a master civil engineer with twenty plus years of experience in the planning, design, and execution of infrastructure and construction projects throughout Guyana. He has worked across a wide range of project types, with structural integrity and field efficiency at the center of how he approaches the work. His method on site is direct: check the drawings against the conditions, then build to what the drawings say.",
     photoSlot: "/leadership/bickram-placeholder",
   },
   {

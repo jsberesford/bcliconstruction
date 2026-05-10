@@ -5,7 +5,7 @@ import { ScrollReveal } from "@/components/shared/ScrollReveal";
 
 export function ContactHero() {
   return (
-    <section className="relative overflow-hidden bg-cream pt-40 pb-24">
+    <section className="relative overflow-hidden bg-cream pt-40 pb-section">
       <BlueprintGrid opacity={0.1} />
       <div className="container-x relative">
         <ScrollReveal>

@@ -171,7 +171,7 @@ export function ContactForm() {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3 text-sm font-medium text-ink ring-1 ring-inset ring-ink/10 transition-colors hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2"
+                    className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-ink ring-1 ring-inset ring-ink/10 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:bg-accent/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30 focus-visible:ring-offset-2"
                   >
                     {contact.form.submitLabel}
                   </button>

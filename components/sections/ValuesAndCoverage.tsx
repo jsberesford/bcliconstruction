@@ -53,7 +53,7 @@ export function ValuesAndCoverage() {
               </ScrollReveal>
 
               <AnimatedHeadline
-                as="h2"
+                as="h3"
                 text={about.coverage.headline}
                 className="mt-4 text-display-sm"
               />

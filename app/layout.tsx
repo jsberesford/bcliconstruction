@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Manrope } from "next/font/google";
 import { LenisProvider } from "@/lib/scroll/LenisProvider";
+import { MotionShell } from "@/components/shared/MotionShell";
 import { Navigation } from "@/components/shared/Navigation";
 import { Footer } from "@/components/shared/Footer";
 import { company } from "@/content/company";
@@ -55,17 +56,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
       <body className="bg-cream text-ink antialiased">
-        <LenisProvider>
-          <a
-            href="#main"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-ink focus:px-3 focus:py-2 focus:text-cream"
-          >
-            Skip to content
-          </a>
-          <Navigation />
-          <main id="main">{children}</main>
-          <Footer />
-        </LenisProvider>
+        <MotionShell>
+          <LenisProvider>
+            <a
+              href="#main"
+              className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-ink focus:px-3 focus:py-2 focus:text-cream"
+            >
+              Skip to content
+            </a>
+            <Navigation />
+            <main id="main">{children}</main>
+            <Footer />
+          </LenisProvider>
+        </MotionShell>
       </body>
     </html>
   );

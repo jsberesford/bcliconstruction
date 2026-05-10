@@ -30,7 +30,7 @@ export function ClosingCTA() {
           <AnimatedHeadline
             as="h2"
             text={home.closing.headline}
-            className="mt-4 text-display-lg text-balance max-w-xl"
+            className="mt-4 text-display-md text-balance max-w-xl"
           />
         </ScrollReveal>
 
