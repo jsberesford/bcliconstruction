@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { Fragment, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { wordStagger, staggerParent, reducedMotionVariants } from "@/lib/motion/variants";
 import { useReducedMotionFlag } from "@/lib/motion/useReducedMotionFlag";
@@ -50,21 +50,20 @@ export function AnimatedHeadline({
             word.replace(/[.,;:!?]+$/, "").toLowerCase() ===
               highlightWord.toLowerCase();
           return (
-            <span
-              key={`${word}-${i}`}
-              className="inline-block overflow-hidden align-baseline"
-            >
-              <motion.span
-                variants={wordVariants}
-                className={cn(
-                  "inline-block",
-                  isHighlight && "heading-underline"
-                )}
-              >
-                {word}
-              </motion.span>
+            <Fragment key={`${word}-${i}`}>
+              <span className="inline-block overflow-hidden align-baseline">
+                <motion.span
+                  variants={wordVariants}
+                  className={cn(
+                    "inline-block",
+                    isHighlight && "heading-underline"
+                  )}
+                >
+                  {word}
+                </motion.span>
+              </span>
               {i < words.length - 1 ? " " : ""}
-            </span>
+            </Fragment>
           );
         })}
       </motion.span>
