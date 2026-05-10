@@ -59,17 +59,17 @@ export const about = {
     headline: "A construction company built by people who have run them before.",
     paragraphs: [
       "BCLI was founded by Bickram Kowchai, a master civil engineer who has spent two decades planning, designing, and executing infrastructure projects across Guyana. The firm has grown around the work itself, not around a marketing story, which means almost everything BCLI does was earned on a site.",
-      "The leadership team brings two sides of the same coin to the firm: deep technical engineering experience on one side, and three plus decades of entrepreneurial and sourcing experience on the other. Together, that means BCLI can build the project and run the business of building it.",
+      "The leadership team is split between deep technical engineering experience and three plus decades of entrepreneurial and sourcing experience. One side knows how to build it. The other knows how to run the operation around it.",
       "We work across coastal Guyana, from Region 2 through Region 6, with most of the work concentrated along the West Coast Berbice corridor and the Demerara stretch.",
     ],
   },
   values: {
     eyebrow: "How we work",
-    headline: "Quality, safety, reliability. In that order, every project.",
+    headline: "Quality first. Safety always. Reliability is how we keep the next contract.",
     items: [
       {
         title: "Quality",
-        body: "Structural integrity is the first conversation, not the last. Drawings get checked, specs get followed, and the work is built to live where it is going to live.",
+        body: "Structural integrity is the first conversation, not the last. Drawings get checked against site conditions. The work is built to outlast the wet season, not just pass inspection.",
       },
       {
         title: "Safety",
