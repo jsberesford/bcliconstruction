@@ -7,53 +7,115 @@ import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import { useReducedMotionFlag } from "@/lib/motion/useReducedMotionFlag";
 import { home } from "@/content/copy";
 
-// Geometry constants. viewBox is 1000 x 800.
+// Center of the orbit system in SVG user coordinates. All three orbits share
+// this point; each rotates around it as a rigid body.
 const CX = 500;
 const CY = 400;
 
-// Three concentric, tilted orbits. The transform on the parent group adds
-// the perspective rotation. The ellipses themselves are flatter than wide.
+// Three concentric ellipses. rx/ry around 2.5:1 reads as a tilted plane;
+// the parent group's static rotate(-12) adds the WGB perspective. All orbits
+// rotate clockwise around (CX, CY); inner is fastest, outer is slowest.
 const ORBITS = [
-  { rx: 410, ry: 138, label: "Roads", labelAngle: 28, speed: 38, w: 1.6, accent: true },
-  { rx: 305, ry: 102, label: "Bridges", labelAngle: 200, speed: 46, w: 1.1, accent: false },
-  { rx: 205, ry: 68, label: "Drains", labelAngle: 112, speed: 55, w: 1.1, accent: false },
+  { rx: 410, ry: 165, label: "Roads", labelAngle: 28, duration: 60, strokeWidth: 1.6, accent: true },
+  { rx: 305, ry: 125, label: "Bridges", labelAngle: 205, duration: 45, strokeWidth: 1.1, accent: false },
+  { rx: 205, ry: 85, label: "Drains", labelAngle: 118, duration: 30, strokeWidth: 1.1, accent: false },
 ];
 
-// Simplified silhouette of Guyana. Wider at the top (Atlantic coast), narrower
-// at the south, slight notches on the east and west borders. Centered on (CX, CY)
-// inside a ~110 wide by ~150 tall envelope.
-const GUYANA_PATH = [
-  "M 458 332",
-  "L 478 326",
-  "L 498 330",
-  "L 520 326",
-  "L 540 330",
-  "L 552 342",
-  "L 548 360",
-  "L 556 378",
-  "L 552 398",
-  "L 546 420",
-  "L 540 440",
-  "L 530 458",
-  "L 520 472",
-  "L 508 478",
-  "L 496 472",
-  "L 484 460",
-  "L 472 444",
-  "L 462 426",
-  "L 456 406",
-  "L 452 384",
-  "L 450 362",
-  "L 452 346",
-  "Z",
-].join(" ");
+// Real outline of Guyana, sourced from djaiss/mapsicon (CC0).
+// The path's native coordinate system is a 0 to 10240 range with the y-axis
+// inverted; the inner group (translate 0 1024, scale 0.1 -0.1) brings it into
+// a 0 to 1024 display range. The outer group then scales (0.1367) and
+// positions the silhouette so it sits centered at (CX, CY) and fits inside
+// the innermost orbit with breathing room on all sides.
+const GUYANA_PATH =
+  "M3481 10231 c-11 -7 7 -32 82 -112 54 -56 109 -122 123 -147 24 -40 " +
+  "25 -50 18 -95 -9 -50 -9 -50 -64 -68 -30 -10 -67 -21 -82 -24 -39 -8 -72 -48 " +
+  "-92 -112 -22 -69 -51 -99 -104 -108 -23 -4 -62 -23 -93 -46 -29 -21 -63 -39 " +
+  "-76 -39 -18 0 -32 -13 -56 -51 -20 -33 -62 -75 -120 -120 l-90 -69 -81 0 -81 " +
+  "0 -47 -59 c-36 -44 -48 -67 -48 -92 0 -43 -103 -209 -129 -209 -22 0 -51 -30 " +
+  "-51 -52 0 -9 10 -41 21 -72 18 -46 26 -56 45 -56 18 0 24 -7 30 -34 4 -26 13 " +
+  "-37 34 -45 24 -8 30 -17 35 -55 6 -41 4 -49 -24 -83 -17 -21 -31 -47 -31 -58 " +
+  "0 -12 30 -51 75 -95 l74 -74 15 35 c27 64 40 70 150 62 94 -6 99 -7 147 -46 " +
+  "29 -22 48 -45 45 -53 -3 -7 -10 -30 -15 -51 -6 -21 -26 -54 -45 -72 -26 -25 " +
+  "-37 -46 -42 -79 l-7 -44 -40 5 c-33 5 -46 1 -70 -19 -16 -13 -37 -24 -47 -24 " +
+  "-10 0 -37 -16 -60 -35 -23 -19 -48 -35 -56 -35 -44 0 -107 -35 -157 -87 l-54 " +
+  "-57 -51 22 c-32 14 -71 22 -106 22 -30 0 -67 5 -82 10 -34 13 -50 -5 -29 -36 " +
+  "12 -19 11 -22 -31 -42 -25 -12 -58 -22 -74 -22 -16 0 -32 -5 -36 -11 -3 -6 " +
+  "-16 -8 -28 -5 -11 3 -45 3 -74 -1 -67 -7 -122 -53 -122 -100 0 -22 -6 -33 -25 " +
+  "-41 -21 -10 -25 -18 -25 -55 0 -36 6 -49 35 -77 19 -19 35 -39 35 -44 0 -6 9 " +
+  "-22 19 -35 13 -17 17 -31 11 -45 -14 -38 -22 -164 -11 -171 6 -3 11 -15 11 " +
+  "-26 0 -10 7 -19 15 -19 22 0 39 -38 25 -55 -8 -10 -8 -19 -1 -34 15 -27 16 " +
+  "-26 -29 -40 -32 -10 -43 -19 -59 -55 -17 -40 -22 -44 -65 -50 -43 -7 -50 -12 " +
+  "-80 -59 -18 -29 -43 -71 -54 -93 -14 -27 -31 -45 -50 -52 -25 -8 -29 -14 -25 " +
+  "-36 8 -41 906 -1026 936 -1026 6 0 36 5 67 12 48 10 63 9 98 -5 28 -11 56 -14 " +
+  "91 -10 27 3 71 0 98 -6 47 -12 48 -12 70 16 18 22 25 25 35 15 17 -17 84 -15 " +
+  "116 5 15 9 41 30 58 45 27 25 38 29 80 26 42 -3 49 -6 52 -25 4 -27 3 -26 38 " +
+  "-13 23 9 31 7 51 -11 12 -13 23 -32 23 -44 0 -28 65 -90 117 -110 56 -22 72 " +
+  "-59 49 -115 -9 -22 -16 -60 -16 -84 0 -24 -6 -59 -14 -77 -8 -19 -17 -91 -21 " +
+  "-164 -6 -112 -10 -135 -30 -166 -13 -20 -30 -52 -38 -71 -11 -26 -23 -37 -54 " +
+  "-46 -49 -15 -58 -26 -66 -75 -6 -37 -4 -39 30 -53 33 -14 37 -14 58 6 22 21 " +
+  "24 21 50 4 16 -11 60 -21 109 -26 160 -17 177 -20 183 -34 3 -8 19 -14 40 -14 " +
+  "26 0 59 -15 124 -57 l88 -56 -25 -30 c-20 -24 -54 -88 -54 -103 0 -2 7 -4 15 " +
+  "-4 12 0 13 -4 5 -19 -32 -60 4 -142 70 -159 34 -8 35 -10 38 -61 3 -44 9 -59 " +
+  "32 -83 16 -16 35 -47 41 -69 10 -33 18 -41 48 -49 64 -18 68 -26 24 -49 -44 " +
+  "-22 -63 -58 -63 -118 0 -28 -6 -37 -31 -51 -72 -39 -89 -61 -89 -110 0 -42 -4 " +
+  "-50 -34 -74 -19 -16 -41 -28 -49 -28 -7 0 -24 -11 -37 -25 -18 -19 -34 -25 " +
+  "-66 -25 -48 0 -54 -9 -54 -75 0 -32 7 -51 25 -73 22 -26 24 -33 14 -61 -6 -18 " +
+  "-9 -44 -6 -60 9 -43 -11 -110 -44 -152 -17 -21 -33 -55 -36 -76 -3 -21 -14 " +
+  "-52 -25 -70 -12 -20 -18 -48 -17 -75 1 -32 -8 -63 -35 -118 -24 -49 -36 -88 " +
+  "-36 -115 0 -22 -12 -122 -27 -222 l-27 -182 27 -38 c15 -22 27 -51 27 -65 0 " +
+  "-14 7 -28 14 -31 35 -14 86 -178 86 -277 l0 -55 73 -57 c45 -37 82 -58 98 -58 " +
+  "46 0 61 -30 72 -141 8 -88 7 -107 -7 -136 -14 -29 -15 -44 -6 -93 9 -51 8 -62 " +
+  "-9 -91 -11 -19 -22 -59 -26 -90 l-7 -56 81 -5 c45 -3 84 -8 87 -11 4 -4 -5 " +
+  "-30 -19 -59 l-27 -53 35 -34 c32 -32 36 -34 59 -21 42 22 99 -10 148 -83 22 " +
+  "-33 49 -62 59 -64 11 -3 19 -11 19 -19 0 -20 60 -84 79 -84 9 0 22 -5 29 -12 " +
+  "7 -7 27 -17 44 -22 24 -8 34 -18 36 -36 2 -14 21 -43 41 -65 21 -22 48 -54 60 " +
+  "-72 18 -26 38 -37 129 -66 59 -20 138 -38 176 -41 99 -8 155 -38 183 -98 26 " +
+  "-55 63 -78 123 -78 57 0 107 24 128 61 41 76 33 73 172 56 143 -17 162 -13 " +
+  "179 43 16 55 13 89 -13 143 -16 32 -20 50 -12 52 6 2 38 9 71 15 82 16 105 32 " +
+  "105 73 0 22 8 40 23 54 12 11 27 28 33 38 10 18 12 18 46 2 20 -9 43 -17 51 " +
+  "-17 8 0 30 -6 49 -14 22 -10 39 -11 49 -5 7 5 25 9 39 9 21 0 28 -7 35 -32 " +
+  "l10 -33 84 0 83 0 20 50 c11 28 23 70 27 95 7 49 11 50 86 35 24 -5 35 -1 54 " +
+  "19 18 19 35 26 62 26 25 0 47 8 66 24 55 45 70 49 137 36 33 -7 74 -19 90 -27 " +
+  "31 -16 74 -12 136 13 32 13 39 21 46 57 7 34 16 45 44 59 46 23 57 40 65 100 " +
+  "7 51 32 88 60 88 8 0 24 13 36 29 35 48 67 56 129 32 l54 -21 51 35 c51 35 " +
+  "140 63 169 52 9 -4 23 -25 32 -47 22 -54 55 -70 145 -70 54 0 77 -4 91 -17 17 " +
+  "-15 51 -24 162 -40 34 -5 43 -2 60 20 17 21 35 27 101 35 68 9 88 9 133 -6 " +
+  "l54 -16 56 29 c32 17 59 31 61 32 9 6 -23 33 -38 33 -22 0 -91 37 -122 66 -22 " +
+  "21 -35 24 -101 24 -68 0 -77 2 -83 20 -4 11 -37 53 -75 94 -69 75 -73 83 -84 " +
+  "148 -5 28 -17 44 -51 70 -41 31 -44 36 -45 80 0 42 -3 48 -34 66 -25 15 -35 " +
+  "29 -39 53 -8 57 -34 112 -61 134 -14 11 -26 29 -26 39 0 10 -14 31 -31 47 -25 " +
+  "23 -30 35 -27 59 4 26 0 33 -29 50 -20 12 -33 27 -33 40 0 11 -9 25 -20 32 " +
+  "-12 8 -20 24 -20 40 0 18 -8 33 -24 44 -14 8 -26 25 -28 37 -2 15 -11 23 -28 " +
+  "25 -35 5 -55 26 -70 72 -12 36 -11 42 5 60 18 20 18 21 -5 45 -20 21 -22 31 " +
+  "-17 81 6 59 -5 85 -84 200 -25 37 -28 49 -29 135 -1 52 1 102 5 112 5 11 1 25 " +
+  "-7 35 -9 9 -18 30 -22 46 -6 25 -10 27 -34 21 -35 -9 -70 -9 -106 0 -26 7 -29 " +
+  "6 -24 -13 5 -19 -1 -24 -48 -39 -46 -14 -59 -15 -96 -3 -24 7 -77 16 -118 19 " +
+  "l-75 6 2 50 c6 132 4 145 -24 180 -15 19 -40 39 -55 44 -17 6 -28 17 -28 28 0 " +
+  "29 -52 78 -104 98 -49 19 -76 53 -76 98 0 48 -43 152 -80 193 -21 23 -41 50 " +
+  "-44 61 -3 11 -40 41 -80 68 -65 42 -76 53 -84 89 -19 76 -34 198 -27 223 3 13 " +
+  "27 44 54 69 26 24 60 67 76 95 24 45 27 58 22 117 -4 60 -1 72 24 115 16 26 " +
+  "29 50 29 52 0 3 25 60 55 126 30 66 55 124 55 128 0 4 -16 26 -35 48 -19 23 " +
+  "-35 48 -35 55 0 8 -16 33 -35 55 -46 54 -45 78 6 121 22 19 52 53 66 75 l25 " +
+  "40 57 -6 57 -5 20 37 c23 44 77 73 119 65 29 -6 52 -6 140 -4 22 0 54 0 70 0 " +
+  "17 -1 68 4 115 9 47 6 114 14 150 17 l66 6 -37 37 -37 36 22 68 c21 68 45 92 " +
+  "69 68 6 -6 28 -11 48 -11 38 0 49 12 49 52 0 21 -65 118 -80 118 -19 0 -30 " +
+  "-28 -20 -54 7 -20 6 -26 -4 -26 -23 0 -35 23 -38 75 -3 43 -6 50 -26 53 -18 3 " +
+  "-21 8 -16 30 4 15 21 43 39 62 23 25 34 48 38 82 4 26 20 69 38 99 66 107 79 " +
+  "152 79 287 0 116 1 125 25 156 23 30 26 44 27 127 1 81 -3 108 -31 194 -47 " +
+  "142 -68 174 -162 242 -44 32 -95 65 -112 74 -156 79 -199 97 -217 92 -11 -3 " +
+  "-20 -14 -20 -24 0 -26 -5 -24 -45 19 -19 20 -46 67 -60 103 -25 64 -28 68 " +
+  "-115 124 -53 35 -100 74 -117 97 -34 50 -100 108 -155 138 -26 13 -58 44 -80 " +
+  "75 -21 30 -59 71 -85 92 -24 16 -63 50 -88 76 -32 34 -72 61 -140 93 -52 25 " +
+  "-129 70 -170 101 -81 40 -203 103 -272 139 -138 74 -169 81 -169 43 0 -14 7 " +
+  "-32 16 -40 13 -14 13 -16 0 -16 -27 0 -89 44 -141 99 -148 158 -137 149 -164 132z";
 
-// Bath Settlement marker, placed on the upper-left of the silhouette
-// (north-coast, west of center). Stays inside the silhouette.
-const BATH_X = 478;
-const BATH_Y = 344;
+// Bath Settlement (BCLI HQ) on the north coast at roughly 6.27 N, 57.51 W,
+// expressed in the final SVG user coordinate space.
+const BATH_X = 527;
+const BATH_Y = 376;
 
-// Label offset distance from the orbit ring, in SVG units.
+// Label offset from each orbit ring, in SVG units.
 const LABEL_OFFSET = 22;
 
 function pointOnEllipse(rx: number, ry: number, angleDeg: number) {
@@ -66,16 +128,14 @@ export function GuyanaOrbit() {
   const reduced = useReducedMotionFlag();
   const inView = useInView(sectionRef, { amount: 0.25 });
 
-  // Refs to the rotating groups, one per orbit.
   const ringRefs = useRef<Array<SVGGElement | null>>([]);
-  // Refs to the label text nodes, used for hover scale.
   const labelRefs = useRef<Array<SVGTextElement | null>>([]);
-
-  // GSAP context + tween refs for cleanup.
   const tweensRef = useRef<gsap.core.Tween[]>([]);
 
-  // Start (and stop) the continuous rotations when in view. Draw-in is handled
-  // by framer-motion below; this effect only governs the perpetual spin.
+  // Continuous rotation. Each orbit group rotates around (CX, CY) in SVG
+  // user coordinates via svgOrigin. transformOrigin on SVG groups is
+  // interpreted against the element's own bounding box, which is why the
+  // previous implementation swung the orbits off-center.
   useEffect(() => {
     if (reduced) return;
     if (!inView) return;
@@ -84,11 +144,10 @@ export function GuyanaOrbit() {
       tweensRef.current = ringRefs.current
         .map((g, i) => {
           if (!g) return null;
-          const dir = i === 1 ? -1 : 1; // middle ring spins opposite for life
           return gsap.to(g, {
-            rotation: 360 * dir,
-            transformOrigin: `${CX}px ${CY}px`,
-            duration: ORBITS[i].speed,
+            rotation: 360,
+            svgOrigin: `${CX} ${CY}`,
+            duration: ORBITS[i].duration,
             repeat: -1,
             ease: "none",
           });
@@ -103,14 +162,17 @@ export function GuyanaOrbit() {
     };
   }, [inView, reduced]);
 
-  // Hover slowdown + label scale. Independent from the rotation effect so it
-  // works as soon as tweens exist.
   const onPointerEnter = () => {
     if (reduced) return;
     tweensRef.current.forEach((t) => t.timeScale(0.5));
     labelRefs.current.forEach((node) => {
       if (!node) return;
-      gsap.to(node, { scale: 1.05, duration: 0.4, ease: "power2.out", transformOrigin: "center center" });
+      gsap.to(node, {
+        scale: 1.05,
+        duration: 0.4,
+        ease: "power2.out",
+        transformOrigin: "center center",
+      });
     });
   };
 
@@ -119,12 +181,15 @@ export function GuyanaOrbit() {
     tweensRef.current.forEach((t) => t.timeScale(1));
     labelRefs.current.forEach((node) => {
       if (!node) return;
-      gsap.to(node, { scale: 1, duration: 0.4, ease: "power2.out", transformOrigin: "center center" });
+      gsap.to(node, {
+        scale: 1,
+        duration: 0.4,
+        ease: "power2.out",
+        transformOrigin: "center center",
+      });
     });
   };
 
-  // pathLength target for draw-in. Framer handles the once-on-enter draw.
-  const drawTarget = reduced ? 1 : undefined;
   const drawDuration = reduced ? 0 : 1.4;
 
   return (
@@ -159,15 +224,14 @@ export function GuyanaOrbit() {
             aria-label={home.orbit.diagramLabel}
             preserveAspectRatio="xMidYMid meet"
           >
-            {/* Whole orbit system, tilted for perspective */}
+            {/* Tilted orbit plane. Static rotation gives the WGB perspective;
+                the individual orbit groups inside rotate around (CX, CY). */}
             <g transform={`rotate(-12 ${CX} ${CY})`}>
               {ORBITS.map((o, i) => {
                 const p = pointOnEllipse(o.rx, o.ry, o.labelAngle);
-                // Label offset, pushed outward along the same radial direction.
                 const t = (o.labelAngle * Math.PI) / 180;
                 const lx = p.x + Math.cos(t) * LABEL_OFFSET;
                 const ly = p.y + Math.sin(t) * LABEL_OFFSET;
-
                 const stroke = o.accent ? "#F5B800" : "#0F0F0F";
                 const strokeOpacity = o.accent ? 1 : 0.6;
 
@@ -186,12 +250,10 @@ export function GuyanaOrbit() {
                       fill="none"
                       stroke={stroke}
                       strokeOpacity={strokeOpacity}
-                      strokeWidth={o.w}
+                      strokeWidth={o.strokeWidth}
                       strokeLinecap="round"
                       initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
-                      whileInView={
-                        reduced ? undefined : { pathLength: drawTarget ?? 1 }
-                      }
+                      whileInView={reduced ? undefined : { pathLength: 1 }}
                       viewport={{ once: true, amount: 0.25 }}
                       transition={{
                         duration: drawDuration,
@@ -199,7 +261,6 @@ export function GuyanaOrbit() {
                         delay: i * 0.2,
                       }}
                     />
-                    {/* Marker dot riding the ring */}
                     <motion.circle
                       cx={p.x}
                       cy={p.y}
@@ -214,9 +275,6 @@ export function GuyanaOrbit() {
                         delay: reduced ? 0 : 0.4 + i * 0.2,
                       }}
                     />
-                    {/* Counter-rotated label so the text stays upright while the
-                        parent group spins. The wrapper rotates with the orbit;
-                        the inner text is kept readable through CSS transform-box. */}
                     <motion.text
                       ref={(el) => {
                         labelRefs.current[i] = el;
@@ -245,39 +303,46 @@ export function GuyanaOrbit() {
               })}
             </g>
 
-            {/* Guyana silhouette. Sits dead center and does not rotate. */}
-            <g>
-              <motion.path
-                d={GUYANA_PATH}
-                fill="#0F0F0F"
-                fillOpacity={0.92}
-                initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{
-                  duration: reduced ? 0 : 0.6,
-                  ease: [0.215, 0.61, 0.355, 1],
-                  delay: reduced ? 0 : 0.2,
-                }}
-              />
-              {/* Bath Settlement marker. Ink, since the yellow moment is the outer orbit. */}
-              <motion.circle
-                cx={BATH_X}
-                cy={BATH_Y}
-                r={3}
-                fill="#F5F2EC"
-                stroke="#F5F2EC"
-                strokeWidth={1}
-                initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{
-                  duration: reduced ? 0 : 0.4,
-                  ease: [0.215, 0.61, 0.355, 1],
-                  delay: reduced ? 0 : 0.8,
-                }}
-              />
+            {/* Guyana silhouette. Static, sits outside the tilted plane and
+                does not rotate. Outer transform centers and scales the path
+                into the innermost orbit; inner transform converts mapsicon's
+                native coordinate system into a 0 to 1024 display range. */}
+            <g transform="translate(430 330) scale(0.1367)">
+              <g transform="translate(0 1024) scale(0.1 -0.1)">
+                <motion.path
+                  d={GUYANA_PATH}
+                  fill="#0F0F0F"
+                  fillOpacity={0.92}
+                  initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{
+                    duration: reduced ? 0 : 0.6,
+                    ease: [0.215, 0.61, 0.355, 1],
+                    delay: reduced ? 0 : 0.2,
+                  }}
+                />
+              </g>
             </g>
+
+            {/* Bath Settlement marker on the north coast, in cream so it
+                reads against the dark silhouette. */}
+            <motion.circle
+              cx={BATH_X}
+              cy={BATH_Y}
+              r={3}
+              fill="#F5F2EC"
+              stroke="#F5F2EC"
+              strokeWidth={1}
+              initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{
+                duration: reduced ? 0 : 0.4,
+                ease: [0.215, 0.61, 0.355, 1],
+                delay: reduced ? 0 : 0.8,
+              }}
+            />
           </svg>
         </div>
 
