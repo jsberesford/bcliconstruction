@@ -1,4 +1,5 @@
 import { Hero } from "@/components/sections/Hero";
+import { GuyanaOrbit } from "@/components/sections/GuyanaOrbit";
 import { HomeAbout } from "@/components/sections/HomeAbout";
 import { Services } from "@/components/sections/Services";
 import { EquipmentRentals } from "@/components/sections/EquipmentRentals";
@@ -9,6 +10,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <GuyanaOrbit />
       <HomeAbout />
       <Services />
       <EquipmentRentals />

@@ -16,6 +16,12 @@ export const home = {
     primaryCta: { label: "Start your project", href: "/contact" },
     secondaryCta: { label: "See what we build", href: "#services" },
   },
+  orbit: {
+    eyebrow: "The work, in three orbits",
+    sub: "Roads, bridges, and drains. Three disciplines circling the country we build in.",
+    diagramLabel:
+      "Diagram: BCLI builds roads, bridges, and drains across Guyana.",
+  },
   about: {
     eyebrow: "Who we are",
     headline: "Engineers who have done this for twenty years.",

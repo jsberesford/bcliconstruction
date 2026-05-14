@@ -56,6 +56,15 @@ const config: Config = {
         "out-expo": "cubic-bezier(0.215, 0.61, 0.355, 1)",
         "in-out-expo": "cubic-bezier(0.645, 0.045, 0.355, 1)",
       },
+      keyframes: {
+        marquee: {
+          "0%": { transform: "translate3d(0, 0, 0)" },
+          "100%": { transform: "translate3d(-50%, 0, 0)" },
+        },
+      },
+      animation: {
+        marquee: "marquee 50s linear infinite",
+      },
     },
   },
   plugins: [],

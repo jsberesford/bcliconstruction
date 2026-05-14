@@ -2,7 +2,9 @@ import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import { AnimatedHeadline } from "@/components/shared/AnimatedHeadline";
 import { MagneticCTA } from "@/components/shared/MagneticCTA";
 import { LineIllustration } from "@/components/decorative/LineIllustration";
+import { EquipmentMarquee } from "@/components/sections/EquipmentMarquee";
 import { rentals } from "@/content/rentals";
+import { equipment } from "@/content/equipment";
 
 export function EquipmentRentals() {
   return (
@@ -39,22 +41,14 @@ export function EquipmentRentals() {
         <ScrollReveal delay={0.15} className="mt-6 max-w-prose">
           <p className="text-base leading-relaxed text-ink">{rentals.body}</p>
         </ScrollReveal>
+      </div>
 
-        {/* Equipment list */}
-        <ScrollReveal delay={0.2} className="mt-8">
-          <ul className="space-y-2">
-            {rentals.equipment.map((item) => (
-              <li key={item} className="flex items-center gap-3 text-sm text-gray">
-                <span
-                  className="h-px w-6 bg-rule shrink-0"
-                  aria-hidden
-                />
-                {item}
-              </li>
-            ))}
-          </ul>
-        </ScrollReveal>
+      {/* Full bleed equipment marquee, sits between body and CTA */}
+      <ScrollReveal delay={0.2} className="mt-10">
+        <EquipmentMarquee items={equipment} />
+      </ScrollReveal>
 
+      <div className="container-x relative">
         {/* Yellow CTA (one of the 4 allowed yellow moments) */}
         <ScrollReveal delay={0.25} className="mt-10">
           <MagneticCTA href={rentals.ctaHref} tone="accent">
