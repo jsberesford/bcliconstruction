@@ -7,19 +7,53 @@ import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import { useReducedMotionFlag } from "@/lib/motion/useReducedMotionFlag";
 import { home } from "@/content/copy";
 
-// Center of the orbit system in SVG user coordinates. All three orbits share
-// this point; each rotates around it as a rigid body.
+// Center of the orbit system in SVG user coordinates. All three ellipses
+// share this center and the same tilt; only their rx and ry differ, so they
+// nest as concentric rings that never cross.
 const CX = 500;
-const CY = 400;
+const CY = 440;
 
-// Three concentric ellipses. rx/ry around 2.5:1 reads as a tilted plane;
-// the parent group's static rotate(-12) adds the WGB perspective. All orbits
-// rotate clockwise around (CX, CY); inner is fastest, outer is slowest.
+// Static perspective tilt for the orbit plane. The rings never rotate as
+// shapes; only the marker dots travel along each ring's path. Keeping the
+// shape static is what makes the orbits nest cleanly at every moment.
+const TILT_DEG = -25;
+const TILT = (TILT_DEG * Math.PI) / 180;
+
+// Nested orbits, each at a clean 2:1 ratio. The outer ring is the largest;
+// inner ring is smallest. duration controls how long a single full lap takes
+// for the marker (slower for the outer ring, faster for the inner).
 const ORBITS = [
-  { rx: 410, ry: 165, label: "Roads", labelAngle: 28, duration: 60, strokeWidth: 1.6, accent: true },
-  { rx: 305, ry: 125, label: "Bridges", labelAngle: 205, duration: 45, strokeWidth: 1.1, accent: false },
-  { rx: 205, ry: 85, label: "Drains", labelAngle: 118, duration: 30, strokeWidth: 1.1, accent: false },
+  {
+    rx: 400,
+    ry: 200,
+    label: "Roads",
+    duration: 60,
+    strokeWidth: 1.6,
+    accent: true,
+    startAngle: 24,
+  },
+  {
+    rx: 300,
+    ry: 150,
+    label: "Bridges",
+    duration: 45,
+    strokeWidth: 1.1,
+    accent: false,
+    startAngle: 205,
+  },
+  {
+    rx: 200,
+    ry: 100,
+    label: "Drains",
+    duration: 30,
+    strokeWidth: 1.1,
+    accent: false,
+    startAngle: 118,
+  },
 ];
+
+// Distance from the marker dot to the label baseline, in SVG units.
+const LABEL_OFFSET = 18;
 
 // Real outline of Guyana, sourced from djaiss/mapsicon (CC0).
 // The path's native coordinate system is a 0 to 10240 range with the y-axis
@@ -110,17 +144,33 @@ const GUYANA_PATH =
   "-129 70 -170 101 -81 40 -203 103 -272 139 -138 74 -169 81 -169 43 0 -14 7 " +
   "-32 16 -40 13 -14 13 -16 0 -16 -27 0 -89 44 -141 99 -148 158 -137 149 -164 132z";
 
-// Bath Settlement (BCLI HQ) on the north coast at roughly 6.27 N, 57.51 W,
-// expressed in the final SVG user coordinate space.
+// Bath Settlement (BCLI HQ) on the north coast, in the final SVG user
+// coordinate space. The outline now sits centered on (CX, CY=440), so the
+// marker shifts down 40 units from the original outline position.
 const BATH_X = 527;
-const BATH_Y = 376;
+const BATH_Y = 416;
 
-// Label offset from each orbit ring, in SVG units.
-const LABEL_OFFSET = 22;
-
-function pointOnEllipse(rx: number, ry: number, angleDeg: number) {
+// Convert an angle on an unrotated ellipse to the on-screen (tilted) point.
+function pointOnOrbit(rx: number, ry: number, angleDeg: number) {
   const t = (angleDeg * Math.PI) / 180;
-  return { x: CX + rx * Math.cos(t), y: CY + ry * Math.sin(t) };
+  const lx = rx * Math.cos(t);
+  const ly = ry * Math.sin(t);
+  return {
+    x: CX + lx * Math.cos(TILT) - ly * Math.sin(TILT),
+    y: CY + lx * Math.sin(TILT) + ly * Math.cos(TILT),
+  };
+}
+
+// Outward direction from center, used to push the label just past the ring.
+function labelAnchorAt(x: number, y: number) {
+  const dx = x - CX;
+  const dy = y - CY;
+  const len = Math.hypot(dx, dy) || 1;
+  const lx = x + (dx / len) * LABEL_OFFSET;
+  const ly = y + (dy / len) * LABEL_OFFSET;
+  const anchor: "start" | "middle" | "end" =
+    Math.abs(dx) < 24 ? "middle" : dx > 0 ? "start" : "end";
+  return { lx, ly, anchor };
 }
 
 export function GuyanaOrbit() {
@@ -128,31 +178,43 @@ export function GuyanaOrbit() {
   const reduced = useReducedMotionFlag();
   const inView = useInView(sectionRef, { amount: 0.25 });
 
-  const ringRefs = useRef<Array<SVGGElement | null>>([]);
+  const markerRefs = useRef<Array<SVGCircleElement | null>>([]);
   const labelRefs = useRef<Array<SVGTextElement | null>>([]);
   const tweensRef = useRef<gsap.core.Tween[]>([]);
 
-  // Continuous rotation. Each orbit group rotates around (CX, CY) in SVG
-  // user coordinates via svgOrigin. transformOrigin on SVG groups is
-  // interpreted against the element's own bounding box, which is why the
-  // previous implementation swung the orbits off-center.
+  // The orbit rings never rotate as shapes. Each marker (and its label)
+  // sweeps around its own ring; the label is rendered upright at all times
+  // because it lives outside the orbit's transform stack and we recompute
+  // its position on every tick.
   useEffect(() => {
     if (reduced) return;
     if (!inView) return;
 
     const ctx = gsap.context(() => {
-      tweensRef.current = ringRefs.current
-        .map((g, i) => {
-          if (!g) return null;
-          return gsap.to(g, {
-            rotation: 360,
-            svgOrigin: `${CX} ${CY}`,
-            duration: ORBITS[i].duration,
-            repeat: -1,
-            ease: "none",
-          });
-        })
-        .filter((t): t is gsap.core.Tween => t !== null);
+      tweensRef.current = ORBITS.map((orbit, i) => {
+        const state = { angle: orbit.startAngle };
+        return gsap.to(state, {
+          angle: orbit.startAngle + 360,
+          duration: orbit.duration,
+          repeat: -1,
+          ease: "none",
+          onUpdate: () => {
+            const { x, y } = pointOnOrbit(orbit.rx, orbit.ry, state.angle);
+            const marker = markerRefs.current[i];
+            if (marker) {
+              marker.setAttribute("cx", String(x));
+              marker.setAttribute("cy", String(y));
+            }
+            const label = labelRefs.current[i];
+            if (label) {
+              const { lx, ly, anchor } = labelAnchorAt(x, y);
+              label.setAttribute("x", String(lx));
+              label.setAttribute("y", String(ly));
+              label.setAttribute("text-anchor", anchor);
+            }
+          },
+        });
+      });
     });
 
     return () => {
@@ -165,29 +227,11 @@ export function GuyanaOrbit() {
   const onPointerEnter = () => {
     if (reduced) return;
     tweensRef.current.forEach((t) => t.timeScale(0.5));
-    labelRefs.current.forEach((node) => {
-      if (!node) return;
-      gsap.to(node, {
-        scale: 1.05,
-        duration: 0.4,
-        ease: "power2.out",
-        transformOrigin: "center center",
-      });
-    });
   };
 
   const onPointerLeave = () => {
     if (reduced) return;
     tweensRef.current.forEach((t) => t.timeScale(1));
-    labelRefs.current.forEach((node) => {
-      if (!node) return;
-      gsap.to(node, {
-        scale: 1,
-        duration: 0.4,
-        ease: "power2.out",
-        transformOrigin: "center center",
-      });
-    });
   };
 
   const drawDuration = reduced ? 0 : 1.4;
@@ -196,7 +240,7 @@ export function GuyanaOrbit() {
     <section
       id="orbit"
       ref={sectionRef}
-      className="relative py-section bg-cream overflow-hidden"
+      className="relative min-h-screen flex flex-col justify-center py-section bg-cream overflow-hidden"
     >
       <div className="container-x">
         <div className="max-w-prose">
@@ -213,92 +257,44 @@ export function GuyanaOrbit() {
         </div>
 
         <div
-          className="mt-16 flex items-center justify-center"
+          className="mt-12 flex items-center justify-center"
           onPointerEnter={onPointerEnter}
           onPointerLeave={onPointerLeave}
         >
           <svg
-            viewBox="0 0 1000 800"
-            className="block h-[60vh] w-full max-w-[1100px] md:h-[80vh]"
+            viewBox="0 0 1000 880"
+            className="block h-[58vh] w-full max-w-[1100px] md:h-[70vh]"
             role="img"
             aria-label={home.orbit.diagramLabel}
             preserveAspectRatio="xMidYMid meet"
           >
-            {/* Tilted orbit plane. Static rotation gives the WGB perspective;
-                the individual orbit groups inside rotate around (CX, CY). */}
-            <g transform={`rotate(-12 ${CX} ${CY})`}>
+            {/* Tilted orbit plane. The rings are static; only their sizes
+                differ. Same center and same tilt means they nest cleanly. */}
+            <g transform={`rotate(${TILT_DEG} ${CX} ${CY})`}>
               {ORBITS.map((o, i) => {
-                const p = pointOnEllipse(o.rx, o.ry, o.labelAngle);
-                const t = (o.labelAngle * Math.PI) / 180;
-                const lx = p.x + Math.cos(t) * LABEL_OFFSET;
-                const ly = p.y + Math.sin(t) * LABEL_OFFSET;
                 const stroke = o.accent ? "#F5B800" : "#0F0F0F";
-                const strokeOpacity = o.accent ? 1 : 0.6;
-
+                const strokeOpacity = o.accent ? 1 : 0.55;
                 return (
-                  <g
-                    key={o.label}
-                    ref={(el) => {
-                      ringRefs.current[i] = el;
+                  <motion.ellipse
+                    key={`ring-${o.label}`}
+                    cx={CX}
+                    cy={CY}
+                    rx={o.rx}
+                    ry={o.ry}
+                    fill="none"
+                    stroke={stroke}
+                    strokeOpacity={strokeOpacity}
+                    strokeWidth={o.strokeWidth}
+                    strokeLinecap="round"
+                    initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
+                    whileInView={reduced ? undefined : { pathLength: 1 }}
+                    viewport={{ once: true, amount: 0.25 }}
+                    transition={{
+                      duration: drawDuration,
+                      ease: [0.215, 0.61, 0.355, 1],
+                      delay: i * 0.2,
                     }}
-                  >
-                    <motion.ellipse
-                      cx={CX}
-                      cy={CY}
-                      rx={o.rx}
-                      ry={o.ry}
-                      fill="none"
-                      stroke={stroke}
-                      strokeOpacity={strokeOpacity}
-                      strokeWidth={o.strokeWidth}
-                      strokeLinecap="round"
-                      initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
-                      whileInView={reduced ? undefined : { pathLength: 1 }}
-                      viewport={{ once: true, amount: 0.25 }}
-                      transition={{
-                        duration: drawDuration,
-                        ease: [0.215, 0.61, 0.355, 1],
-                        delay: i * 0.2,
-                      }}
-                    />
-                    <motion.circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={5}
-                      fill="#0F0F0F"
-                      initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true, amount: 0.25 }}
-                      transition={{
-                        duration: reduced ? 0 : 0.4,
-                        ease: [0.215, 0.61, 0.355, 1],
-                        delay: reduced ? 0 : 0.4 + i * 0.2,
-                      }}
-                    />
-                    <motion.text
-                      ref={(el) => {
-                        labelRefs.current[i] = el;
-                      }}
-                      x={lx}
-                      y={ly}
-                      fill="#0F0F0F"
-                      fontSize={16}
-                      fontFamily="var(--font-body), ui-sans-serif, system-ui, sans-serif"
-                      letterSpacing="0.04em"
-                      textAnchor={lx >= CX ? "start" : "end"}
-                      dominantBaseline="middle"
-                      initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true, amount: 0.25 }}
-                      transition={{
-                        duration: reduced ? 0 : 0.5,
-                        ease: [0.215, 0.61, 0.355, 1],
-                        delay: reduced ? 0 : 0.5 + i * 0.2,
-                      }}
-                    >
-                      {o.label}
-                    </motion.text>
-                  </g>
+                  />
                 );
               })}
             </g>
@@ -307,7 +303,7 @@ export function GuyanaOrbit() {
                 does not rotate. Outer transform centers and scales the path
                 into the innermost orbit; inner transform converts mapsicon's
                 native coordinate system into a 0 to 1024 display range. */}
-            <g transform="translate(430 330) scale(0.1367)">
+            <g transform="translate(430 370) scale(0.1367)">
               <g transform="translate(0 1024) scale(0.1 -0.1)">
                 <motion.path
                   d={GUYANA_PATH}
@@ -343,6 +339,58 @@ export function GuyanaOrbit() {
                 delay: reduced ? 0 : 0.8,
               }}
             />
+
+            {/* Markers and labels. Rendered outside the tilted group so they
+                have no rotation context: the label text stays upright at
+                every angle while the marker sweeps along the ring. */}
+            {ORBITS.map((o, i) => {
+              const initial = pointOnOrbit(o.rx, o.ry, o.startAngle);
+              const { lx, ly, anchor } = labelAnchorAt(initial.x, initial.y);
+              return (
+                <g key={`marker-${o.label}`}>
+                  <motion.circle
+                    ref={(el) => {
+                      markerRefs.current[i] = el;
+                    }}
+                    cx={initial.x}
+                    cy={initial.y}
+                    r={5}
+                    fill="#0F0F0F"
+                    initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true, amount: 0.25 }}
+                    transition={{
+                      duration: reduced ? 0 : 0.4,
+                      ease: [0.215, 0.61, 0.355, 1],
+                      delay: reduced ? 0 : 0.4 + i * 0.2,
+                    }}
+                  />
+                  <motion.text
+                    ref={(el) => {
+                      labelRefs.current[i] = el;
+                    }}
+                    x={lx}
+                    y={ly}
+                    fill="#0F0F0F"
+                    fontSize={16}
+                    fontFamily="var(--font-body), ui-sans-serif, system-ui, sans-serif"
+                    letterSpacing="0.04em"
+                    textAnchor={anchor}
+                    dominantBaseline="middle"
+                    initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true, amount: 0.25 }}
+                    transition={{
+                      duration: reduced ? 0 : 0.5,
+                      ease: [0.215, 0.61, 0.355, 1],
+                      delay: reduced ? 0 : 0.5 + i * 0.2,
+                    }}
+                  >
+                    {o.label}
+                  </motion.text>
+                </g>
+              );
+            })}
           </svg>
         </div>
 

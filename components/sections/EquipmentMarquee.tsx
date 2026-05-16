@@ -22,7 +22,7 @@ function Card({
 
   return (
     <div
-      className="relative shrink-0 w-[220px] md:w-[280px] aspect-[4/5] rounded-lg shadow-sm overflow-hidden bg-beige"
+      className="relative shrink-0 w-[280px] md:w-[360px] aspect-[4/3] rounded-lg shadow-sm overflow-hidden bg-beige"
       aria-hidden={ariaHidden || undefined}
     >
       {hasImage ? (
@@ -30,8 +30,9 @@ function Card({
           src={item.src as string}
           alt={ariaHidden ? "" : item.alt}
           fill
-          sizes="(min-width: 768px) 280px, 220px"
-          className="object-cover"
+          sizes="(min-width: 768px) 360px, 280px"
+          className="object-cover object-center"
+          style={{ filter: "saturate(0.92) brightness(0.98) contrast(1.02)" }}
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-beige">
