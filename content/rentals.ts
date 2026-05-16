@@ -1,15 +1,8 @@
 export const rentals = {
-  status: "Coming soon" as const,
-  eyebrow: "Equipment Rentals",
-  headline: "Heavy equipment, on call.",
+  eyebrow: "Excavator Rentals",
+  headline: "Excavators, ready to work.",
   body:
-    "We also rent. Excavators, concrete mixers, compaction equipment, and the rest of the kit that civil projects need on the ground. Fleet details and availability are landing soon. Reach out in the meantime and we will tell you what we have.",
-  ctaLabel: "Get in touch for availability",
+    "BCLI keeps a fleet of well-maintained excavators on call across Guyana. Send your project details and we pair you with the right machine and a seasoned operator.",
+  ctaLabel: "Inquire about rentals",
   ctaHref: "/contact",
-  equipment: [
-    "Excavators",
-    "Concrete mixers",
-    "Compactors",
-    "Heavy haul vehicles",
-  ],
 };

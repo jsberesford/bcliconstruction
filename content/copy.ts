@@ -26,7 +26,7 @@ export const home = {
     eyebrow: "Who we are",
     headline: "Engineers who have done this for twenty years.",
     body:
-      "BCLI is a civil construction firm working out of West Coast Berbice. We plan and build the infrastructure that local economies actually run on, from regional roads to the drains that keep them passable through the wet season.",
+      "BCLI is a civil construction firm working out of West Coast Berbice. We design and build the infrastructure that local economies actually run on, from regional roads to the drains that keep them passable through the wet season.",
     stat: {
       value: 20,
       suffix: "+",

@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import { User } from "lucide-react";
 import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import { AnimatedHeadline } from "@/components/shared/AnimatedHeadline";
 import { home } from "@/content/copy";
@@ -32,8 +34,25 @@ export function Leadership() {
           {leaders.map((leader, i) => (
             <ScrollReveal key={leader.id} delay={0.1 * i}>
               <article className="flex flex-col gap-6">
-                {/* Photo placeholder */}
-                <div className="aspect-[4/5] w-full rounded-sm bg-rule/40 ring-1 ring-rule/60" />
+                {/* Portrait. Real photo when leader.photo is set, otherwise
+                    a person-icon placeholder that reads as intentional. */}
+                <div className="relative aspect-[4/5] w-full overflow-hidden rounded-sm bg-beige ring-1 ring-rule/60 flex items-center justify-center">
+                  {leader.photo ? (
+                    <Image
+                      src={leader.photo}
+                      alt={`Portrait of ${leader.name}`}
+                      fill
+                      sizes="(min-width: 768px) 400px, 100vw"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <User
+                      aria-hidden
+                      strokeWidth={1.25}
+                      className="h-[42%] w-[42%] text-gray"
+                    />
+                  )}
+                </div>
 
                 {/* Role */}
                 <p className="text-eyebrow uppercase tracking-eyebrow text-gray">

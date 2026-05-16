@@ -18,14 +18,11 @@ export function EquipmentRentals() {
       </div>
 
       <div className="container-x relative">
-        {/* Eyebrow + status chip */}
-        <ScrollReveal className="flex items-center gap-3">
+        {/* Eyebrow */}
+        <ScrollReveal>
           <p className="text-eyebrow uppercase tracking-eyebrow text-gray">
             {rentals.eyebrow}
           </p>
-          <span className="inline-flex items-center rounded-full border border-rule bg-cream px-3 py-1 text-eyebrow uppercase tracking-eyebrow text-gray">
-            {rentals.status}
-          </span>
         </ScrollReveal>
 
         {/* Headline */}
