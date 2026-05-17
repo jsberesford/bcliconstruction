@@ -1,34 +1,44 @@
 "use client";
 
-import { BlueprintGrid } from "@/components/decorative/BlueprintGrid";
-import { LineIllustration } from "@/components/decorative/LineIllustration";
 import { ScrollReveal } from "@/components/shared/ScrollReveal";
 import { AnimatedHeadline } from "@/components/shared/AnimatedHeadline";
 import { MagneticCTA } from "@/components/shared/MagneticCTA";
+import { VideoBackground } from "@/components/shared/VideoBackground";
 import { home } from "@/content/copy";
 import { ChevronDown } from "lucide-react";
+
+const HERO_VIDEOS = [
+  "/videos/construction-1.mp4",
+  "/videos/construction-2.mp4",
+  "/videos/construction-3.mp4",
+];
 
 export function Hero() {
   return (
     <section
       id="hero"
-      className="relative isolate overflow-hidden min-h-[90vh] flex flex-col justify-center pt-40 pb-section"
+      className="relative isolate overflow-hidden min-h-[100vh] flex flex-col justify-center pt-40 pb-section text-cream"
     >
-      {/* Blueprint grid backdrop at ~12% opacity */}
-      <BlueprintGrid className="opacity-[0.12]" />
+      {/* Full-bleed construction footage. Sequences three clips with a soft
+          crossfade between them and falls back to a still poster when
+          prefers-reduced-motion is set. */}
+      <VideoBackground
+        sources={HERO_VIDEOS}
+        poster="/videos/poster.jpg"
+        ariaLabel="BCLI construction work across Guyana: excavation, drainage, and roadworks in progress."
+      />
 
-      {/* Plumb line illustration, decorative, low opacity, no accent yellow here */}
+      {/* Legibility overlay. Darker at the bottom where the copy and CTAs
+          sit so the headline reads even against bright cloudy footage. */}
       <div
-        className="pointer-events-none absolute right-8 top-1/2 -translate-y-1/2 w-20 opacity-[0.18] hidden lg:block"
         aria-hidden
-      >
-        <LineIllustration variant="plumb" accent={false} />
-      </div>
+        className="absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/35 to-ink/65"
+      />
 
       <div className="container-x relative flex-1 flex flex-col justify-center">
         {/* Eyebrow */}
         <ScrollReveal>
-          <p className="text-eyebrow uppercase tracking-eyebrow text-gray">
+          <p className="text-eyebrow uppercase tracking-eyebrow text-cream/70">
             {home.hero.eyebrow}
           </p>
         </ScrollReveal>
@@ -38,12 +48,14 @@ export function Hero() {
           as="h1"
           text={home.hero.headline}
           highlightWord="ground"
-          className="mt-6 text-display-xl text-balance max-w-4xl"
+          className="mt-6 text-display-xl text-balance max-w-4xl text-cream drop-shadow-[0_2px_24px_rgba(15,15,15,0.45)]"
         />
 
         {/* Subhead */}
         <ScrollReveal delay={0.2} className="mt-8 max-w-prose">
-          <p className="text-lg leading-relaxed text-gray">{home.hero.sub}</p>
+          <p className="text-lg leading-relaxed text-cream/85">
+            {home.hero.sub}
+          </p>
         </ScrollReveal>
 
         {/* CTAs */}
@@ -58,6 +70,7 @@ export function Hero() {
             href={home.hero.secondaryCta.href}
             tone="ghost"
             showArrow={false}
+            className="text-cream ring-cream/40 hover:ring-cream/80"
           >
             {home.hero.secondaryCta.label}
           </MagneticCTA>
@@ -66,9 +79,11 @@ export function Hero() {
 
       {/* Scroll cue */}
       <div className="container-x relative mt-16">
-        <div className="flex items-center gap-2 text-gray opacity-60">
+        <div className="flex items-center gap-2 text-cream/70">
           <ChevronDown size={16} aria-hidden />
-          <span className="text-eyebrow uppercase tracking-eyebrow">Scroll</span>
+          <span className="text-eyebrow uppercase tracking-eyebrow">
+            Scroll
+          </span>
         </div>
       </div>
     </section>

@@ -52,8 +52,10 @@ const ORBITS = [
   },
 ];
 
-// Distance from the marker dot to the label baseline, in SVG units.
-const LABEL_OFFSET = 18;
+// Distance from the marker dot to the label baseline, in SVG units. Sized
+// to keep the label clear of the orbit ring even after the label's own
+// rendered text height (which is in CSS pixels, not user units).
+const LABEL_OFFSET = 24;
 
 // Real outline of Guyana, sourced from djaiss/mapsicon (CC0).
 // The path's native coordinate system is a 0 to 10240 range with the y-axis
@@ -262,8 +264,8 @@ export function GuyanaOrbit() {
           onPointerLeave={onPointerLeave}
         >
           <svg
-            viewBox="0 0 1000 880"
-            className="block h-[58vh] w-full max-w-[1100px] md:h-[70vh]"
+            viewBox="-40 0 1080 880"
+            className="block h-[62vh] w-full max-w-[1100px] sm:h-[68vh] md:h-[72vh]"
             role="img"
             aria-label={home.orbit.diagramLabel}
             preserveAspectRatio="xMidYMid meet"
@@ -286,6 +288,7 @@ export function GuyanaOrbit() {
                     strokeOpacity={strokeOpacity}
                     strokeWidth={o.strokeWidth}
                     strokeLinecap="round"
+                    vectorEffect="non-scaling-stroke"
                     initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
                     whileInView={reduced ? undefined : { pathLength: 1 }}
                     viewport={{ once: true, amount: 0.25 }}
@@ -326,10 +329,11 @@ export function GuyanaOrbit() {
             <motion.circle
               cx={BATH_X}
               cy={BATH_Y}
-              r={3}
+              r={5}
               fill="#F5F2EC"
               stroke="#F5F2EC"
               strokeWidth={1}
+              vectorEffect="non-scaling-stroke"
               initial={reduced ? { opacity: 1 } : { opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true, amount: 0.25 }}
@@ -354,7 +358,7 @@ export function GuyanaOrbit() {
                     }}
                     cx={initial.x}
                     cy={initial.y}
-                    r={5}
+                    r={7}
                     fill="#0F0F0F"
                     initial={reduced ? { opacity: 1 } : { opacity: 0 }}
                     whileInView={{ opacity: 1 }}
@@ -372,11 +376,11 @@ export function GuyanaOrbit() {
                     x={lx}
                     y={ly}
                     fill="#0F0F0F"
-                    fontSize={16}
                     fontFamily="var(--font-body), ui-sans-serif, system-ui, sans-serif"
                     letterSpacing="0.04em"
                     textAnchor={anchor}
                     dominantBaseline="middle"
+                    style={{ fontSize: "clamp(12px, 1.4vw, 16px)" }}
                     initial={reduced ? { opacity: 1 } : { opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true, amount: 0.25 }}
