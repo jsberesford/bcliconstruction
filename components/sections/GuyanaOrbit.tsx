@@ -290,8 +290,7 @@ export function GuyanaOrbit() {
                     strokeLinecap="round"
                     vectorEffect="non-scaling-stroke"
                     initial={reduced ? { pathLength: 1 } : { pathLength: 0 }}
-                    whileInView={reduced ? undefined : { pathLength: 1 }}
-                    viewport={{ once: true, amount: 0.25 }}
+                    animate={{ pathLength: 1 }}
                     transition={{
                       duration: drawDuration,
                       ease: [0.215, 0.61, 0.355, 1],
@@ -313,8 +312,7 @@ export function GuyanaOrbit() {
                   fill="#0F0F0F"
                   fillOpacity={0.92}
                   initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true, amount: 0.25 }}
+                  animate={{ opacity: 1 }}
                   transition={{
                     duration: reduced ? 0 : 0.6,
                     ease: [0.215, 0.61, 0.355, 1],
@@ -335,8 +333,7 @@ export function GuyanaOrbit() {
               strokeWidth={1}
               vectorEffect="non-scaling-stroke"
               initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true, amount: 0.25 }}
+              animate={{ opacity: 1 }}
               transition={{
                 duration: reduced ? 0 : 0.4,
                 ease: [0.215, 0.61, 0.355, 1],
@@ -361,8 +358,7 @@ export function GuyanaOrbit() {
                     r={7}
                     fill="#0F0F0F"
                     initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true, amount: 0.25 }}
+                    animate={{ opacity: 1 }}
                     transition={{
                       duration: reduced ? 0 : 0.4,
                       ease: [0.215, 0.61, 0.355, 1],
@@ -382,8 +378,7 @@ export function GuyanaOrbit() {
                     dominantBaseline="middle"
                     style={{ fontSize: "clamp(12px, 1.4vw, 16px)" }}
                     initial={reduced ? { opacity: 1 } : { opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true, amount: 0.25 }}
+                    animate={{ opacity: 1 }}
                     transition={{
                       duration: reduced ? 0 : 0.5,
                       ease: [0.215, 0.61, 0.355, 1],

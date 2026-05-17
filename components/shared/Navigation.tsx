@@ -25,22 +25,36 @@ export function Navigation() {
     setOpen(false);
   }, [pathname]);
 
+  // The home page hero shows full-bleed construction footage. While we sit
+  // on top of it (and have not yet scrolled into the condensed bar), the
+  // nav swaps to white text with a soft drop shadow so it reads against
+  // both bright and dark frames of the video.
+  const overHero = pathname === "/" && !condensed;
+
+  const linkBase = "group relative text-sm uppercase tracking-eyebrow transition-colors";
+  const linkColor = overHero
+    ? "text-white font-medium [text-shadow:0_1px_10px_rgba(0,0,0,0.55)] hover:text-white"
+    : "text-ink/80 hover:text-ink";
+
   return (
     <header
       className={cn(
         "fixed inset-x-0 top-0 z-40 transition-[padding,background-color,backdrop-filter] duration-300 ease-out-expo",
         condensed
           ? "bg-cream/85 py-3 backdrop-blur-md"
-          : "bg-transparent py-6"
+          : "bg-transparent py-6",
       )}
     >
       <div className="container-x flex items-center justify-between">
         <Link
           href="/"
           aria-label={`${company.name} home`}
-          className="group flex items-center gap-2 text-ink"
+          className={cn(
+            "group flex items-center gap-2",
+            overHero ? "text-white" : "text-ink",
+          )}
         >
-          <Wordmark condensed={condensed} />
+          <Wordmark condensed={condensed} overHero={overHero} />
         </Link>
 
         <nav
@@ -59,16 +73,18 @@ export function Navigation() {
                 href={link.href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "group relative text-sm uppercase tracking-eyebrow text-ink/80 transition-colors hover:text-ink",
-                  isActive && "text-ink"
+                  linkBase,
+                  linkColor,
+                  isActive && (overHero ? "text-white" : "text-ink"),
                 )}
               >
                 <span>{link.label}</span>
                 <span
                   aria-hidden
                   className={cn(
-                    "absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-ink transition-transform duration-300 ease-out-expo group-hover:scale-x-100",
-                    isActive && "scale-x-100"
+                    "absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 transition-transform duration-300 ease-out-expo group-hover:scale-x-100",
+                    overHero ? "bg-white" : "bg-ink",
+                    isActive && "scale-x-100",
                   )}
                 />
               </Link>
@@ -76,7 +92,12 @@ export function Navigation() {
           })}
           <Link
             href={navCopy.cta.href}
-            className="inline-flex items-center gap-2 rounded-full border border-ink bg-ink px-5 py-2.5 text-sm font-medium text-cream transition-transform duration-200 ease-out-expo hover:-translate-y-0.5"
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-transform duration-200 ease-out-expo hover:-translate-y-0.5",
+              overHero
+                ? "bg-accent text-ink ring-1 ring-inset ring-ink/10"
+                : "border border-ink bg-ink text-cream",
+            )}
           >
             {navCopy.cta.label}
           </Link>
@@ -87,7 +108,12 @@ export function Navigation() {
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="rounded-full border border-ink/15 bg-cream/70 p-2.5 text-ink backdrop-blur md:hidden"
+          className={cn(
+            "rounded-full p-2.5 backdrop-blur md:hidden",
+            overHero
+              ? "border border-white/30 bg-ink/30 text-white"
+              : "border border-ink/15 bg-cream/70 text-ink",
+          )}
         >
           {open ? <X size={18} aria-hidden /> : <Menu size={18} aria-hidden />}
         </button>
@@ -131,18 +157,34 @@ export function Navigation() {
   );
 }
 
-function Wordmark({ condensed }: { condensed: boolean }) {
+function Wordmark({
+  condensed,
+  overHero,
+}: {
+  condensed: boolean;
+  overHero: boolean;
+}) {
   return (
     <span className="flex items-baseline gap-2">
       <span
         className={cn(
-          "font-display text-lg font-semibold leading-none tracking-tight text-ink transition-all duration-300",
-          condensed ? "text-base" : "text-lg"
+          "font-display font-semibold leading-none tracking-tight transition-all duration-300",
+          condensed ? "text-base" : "text-lg",
+          overHero
+            ? "text-white [text-shadow:0_1px_10px_rgba(0,0,0,0.55)]"
+            : "text-ink",
         )}
       >
         BCLI
       </span>
-      <span className="hidden text-[10px] uppercase tracking-eyebrow text-gray sm:inline-block">
+      <span
+        className={cn(
+          "hidden text-[10px] uppercase tracking-eyebrow sm:inline-block",
+          overHero
+            ? "text-white/85 font-medium [text-shadow:0_1px_8px_rgba(0,0,0,0.55)]"
+            : "text-gray",
+        )}
+      >
         Construction & Engineering
       </span>
     </span>

@@ -17,7 +17,7 @@ export function Hero() {
   return (
     <section
       id="hero"
-      className="relative isolate overflow-hidden min-h-[100vh] flex flex-col justify-center pt-40 pb-section text-cream"
+      className="relative isolate overflow-hidden min-h-[100vh] flex flex-col justify-center pt-40 pb-section text-white"
     >
       {/* Full-bleed construction footage. Sequences three clips with a soft
           crossfade between them and falls back to a still poster when
@@ -28,17 +28,24 @@ export function Hero() {
         ariaLabel="BCLI construction work across Guyana: excavation, drainage, and roadworks in progress."
       />
 
-      {/* Legibility overlay. Darker at the bottom where the copy and CTAs
-          sit so the headline reads even against bright cloudy footage. */}
+      {/* Top scrim: protects the navigation against bright frames of the
+          video. Fades to transparent before the headline begins. */}
       <div
         aria-hidden
-        className="absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/35 to-ink/65"
+        className="pointer-events-none absolute inset-x-0 top-0 z-[1] h-40 bg-gradient-to-b from-ink/70 via-ink/40 to-transparent"
+      />
+
+      {/* Body legibility overlay. Darker at the bottom where the copy and
+          CTAs sit so they read even against bright cloudy footage. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-gradient-to-b from-ink/30 via-ink/40 to-ink/70"
       />
 
       <div className="container-x relative flex-1 flex flex-col justify-center">
         {/* Eyebrow */}
         <ScrollReveal>
-          <p className="text-eyebrow uppercase tracking-eyebrow text-cream/70">
+          <p className="text-sm font-medium uppercase tracking-[0.22em] text-white [text-shadow:0_1px_12px_rgba(0,0,0,0.6)]">
             {home.hero.eyebrow}
           </p>
         </ScrollReveal>
@@ -48,12 +55,12 @@ export function Hero() {
           as="h1"
           text={home.hero.headline}
           highlightWord="ground"
-          className="mt-6 text-display-xl text-balance max-w-4xl text-cream drop-shadow-[0_2px_24px_rgba(15,15,15,0.45)]"
+          className="mt-6 text-display-xl text-balance max-w-5xl text-white font-bold [text-shadow:0_2px_24px_rgba(0,0,0,0.55)]"
         />
 
         {/* Subhead */}
         <ScrollReveal delay={0.2} className="mt-8 max-w-prose">
-          <p className="text-lg leading-relaxed text-cream/85">
+          <p className="text-lg md:text-xl leading-relaxed text-white/95 [text-shadow:0_1px_14px_rgba(0,0,0,0.55)]">
             {home.hero.sub}
           </p>
         </ScrollReveal>
@@ -70,7 +77,7 @@ export function Hero() {
             href={home.hero.secondaryCta.href}
             tone="ghost"
             showArrow={false}
-            className="text-cream ring-cream/40 hover:ring-cream/80"
+            className="text-white ring-white/50 hover:ring-white/90 [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]"
           >
             {home.hero.secondaryCta.label}
           </MagneticCTA>
@@ -79,7 +86,7 @@ export function Hero() {
 
       {/* Scroll cue */}
       <div className="container-x relative mt-16">
-        <div className="flex items-center gap-2 text-cream/70">
+        <div className="flex items-center gap-2 text-white/80 [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
           <ChevronDown size={16} aria-hidden />
           <span className="text-eyebrow uppercase tracking-eyebrow">
             Scroll
